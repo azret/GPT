@@ -1,0 +1,39 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build-and-test-cpu:
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+
+    runs-on: windows-latest
+
+    steps:
+      - name: actions/checkout@v4
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: pip install -r requirements.txt
+        run: pip install -r requirements.txt
+
+      - name: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v2
+
+      - name: dotnet build test/test.csproj --configuration ${{ matrix.configuration }}
+        run: dotnet build test/test.csproj --configuration ${{ matrix.configuration }}
+
+      - name: dotnet test test/test.csproj --configuration ${{ matrix.configuration }}
+        run: dotnet test test/test.csproj --configuration ${{ matrix.configuration }}
+
